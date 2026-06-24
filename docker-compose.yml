@@ -78,7 +78,7 @@ services:
     networks:
       - dokploy-network
     healthcheck:
-      test: ["CMD", "mysql", "-uroot", "-pA7SDY371Q", "-e", "SELECT 1"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 10
