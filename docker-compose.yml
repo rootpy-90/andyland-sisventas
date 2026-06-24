@@ -1,0 +1,95 @@
+services:
+  # ============================================
+  # APP - Laravel 5.4 con PHP 7.4
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: sisventas-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+    networks:
+      - sisventas-network
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=dbventaslaravel
+      - DB_USERNAME=sisventas
+      - DB_PASSWORD=secret
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan key:generate --force &&
+             php artisan migrate --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # DATABASE - MySQL 5.7 (compatible con Laravel 5.4)
+  # ============================================
+  db:
+    image: mysql:5.7
+    container_name: sisventas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: dbventaslaravel
+      MYSQL_USER: sisventas
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    volumes:
+      - sisventas-db-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sisventas-network
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================
+  # PHPMYADMIN - Admin BD (opcional)
+  # ============================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: sisventas-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootsecret
+    networks:
+      - sisventas-network
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    profiles:
+      - tools
+
+networks:
+  sisventas-network:
+    driver: bridge
+
+volumes:
+  sisventas-db-data:
+    driver: local

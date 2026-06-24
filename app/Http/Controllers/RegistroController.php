@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 
 
 use sisVentas\Http\Requests;
-use sisVentas\Registro;
 use Illuminate\Support\Facades\Redirect;
 use DB;
 
