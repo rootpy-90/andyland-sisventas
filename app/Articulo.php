@@ -28,4 +28,19 @@ class Articulo extends Model
     protected $guarded =[
 
     ];
+
+    public function categoria()
+    {
+        return $this->belongsTo('sisVentas\Categoria', 'idcategoria');
+    }
+
+    public function detallesVenta()
+    {
+        return $this->hasMany('sisVentas\DetalleVenta', 'idarticulo');
+    }
+
+    public function detallesIngreso()
+    {
+        return $this->hasMany('sisVentas\DetalleIngreso', 'idarticulo');
+    }
 }

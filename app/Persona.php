@@ -31,4 +31,19 @@ class Persona extends Model
     protected $guarded =[
 
     ];
+
+    public function user()
+    {
+        return $this->hasOne('sisVentas\User', 'idpersona');
+    }
+
+    public function ventas()
+    {
+        return $this->hasMany('sisVentas\Venta', 'idcliente');
+    }
+
+    public function ingresos()
+    {
+        return $this->hasMany('sisVentas\Ingreso', 'idproveedor');
+    }
 }

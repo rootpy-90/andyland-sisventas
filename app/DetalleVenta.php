@@ -24,4 +24,14 @@ class DetalleVenta extends Model
     protected $guarded =[
 
     ];
+
+    public function venta()
+    {
+        return $this->belongsTo('sisVentas\Venta', 'idventa');
+    }
+
+    public function articulo()
+    {
+        return $this->belongsTo('sisVentas\Articulo', 'idarticulo');
+    }
 }

@@ -26,4 +26,14 @@ class Ingreso extends Model
     protected $guarded =[
 
     ];
+
+    public function proveedor()
+    {
+        return $this->belongsTo('sisVentas\Persona', 'idproveedor');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany('sisVentas\DetalleIngreso', 'idingreso');
+    }
 }

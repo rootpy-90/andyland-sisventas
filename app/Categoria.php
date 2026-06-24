@@ -22,4 +22,9 @@ class Categoria extends Model
     protected $guarded =[
 
     ];
+
+    public function articulos()
+    {
+        return $this->hasMany('sisVentas\Articulo', 'idcategoria');
+    }
 }

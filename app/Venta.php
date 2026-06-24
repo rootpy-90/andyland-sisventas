@@ -27,4 +27,14 @@ class Venta extends Model
     protected $guarded =[
 
     ];
+
+    public function cliente()
+    {
+        return $this->belongsTo('sisVentas\Persona', 'idcliente');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany('sisVentas\DetalleVenta', 'idventa');
+    }
 }

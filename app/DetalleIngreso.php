@@ -24,4 +24,14 @@ class DetalleIngreso extends Model
     protected $guarded =[
 
     ];
+
+    public function ingreso()
+    {
+        return $this->belongsTo('sisVentas\Ingreso', 'idingreso');
+    }
+
+    public function articulo()
+    {
+        return $this->belongsTo('sisVentas\Articulo', 'idarticulo');
+    }
 }
