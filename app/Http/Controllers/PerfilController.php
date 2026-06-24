@@ -174,6 +174,31 @@ class PerfilController extends Controller
         return redirect()->route('perfil')->with('status', '¡Contraseña actualizada correctamente!');
     }
 
+    public function actualizarEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:255|unique:users,email,' . auth()->user()->id,
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email'    => 'El correo debe ser válido.',
+            'email.unique'   => 'Este correo ya está registrado.',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput()->with('tab', 'email');
+        }
+
+        DB::table('users')->where('id', auth()->user()->id)->update([
+            'email' => $request->email,
+        ]);
+
+        DB::table('persona')->where('idpersona', auth()->user()->idpersona)->update([
+            'email' => $request->email,
+        ]);
+
+        return redirect()->route('perfil')->with('status', '¡Correo electrónico actualizado correctamente!');
+    }
+
     public function subirComprobante(Request $request, $id)
     {
         $venta = DB::table('venta')

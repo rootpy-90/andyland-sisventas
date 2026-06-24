@@ -206,9 +206,16 @@
 
           <div class="field-group">
             <label><i class="fa fa-envelope"></i> Correo electrónico</label>
-            <input type="email" class="field-input" value="{{ auth()->user()->email }}" disabled
-              style="background:#f9f9f9; color:#aaa;">
-            <span style="font-size:11px; color:#bbb; margin-top:3px;">No se puede cambiar el correo.</span>
+            <form method="POST" action="{{ route('perfil.email') }}" style="display:flex; gap:8px; align-items:flex-start;">
+              {{ csrf_field() }}
+              <input type="email" name="email" class="field-input {{ $errors->has('email') ? 'error' : '' }}"
+                value="{{ old('email', auth()->user()->email) }}" required style="flex:1;">
+              <button type="submit" class="btn-save" style="padding:10px 16px; white-space:nowrap;">
+                <i class="fa fa-save"></i> Guardar
+              </button>
+            </form>
+            @if($errors->has('email')) <p class="field-error">{{ $errors->first('email') }}</p> @endif
+            <span style="font-size:11px; color:#bbb; margin-top:3px;">Se usará para notificaciones y recuperación de contraseña.</span>
           </div>
 
           {{-- Campos de dirección ocultos para que no se borren al guardar solo datos --}}
@@ -508,6 +515,16 @@ function togglePwd(id, icon) {
     document.getElementById('tab-password').style.display = 'block';
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn')[3].classList.add('active');
+  });
+@endif
+
+// Auto-abrir tab si viene con errores de email
+@if(session('tab') == 'email')
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.getElementById('tab-datos').style.display = 'block';
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
   });
 @endif
 </script>
