@@ -33,6 +33,14 @@ if [ ! -f /var/www/storage/app/.installed ]; then
     echo ""
     echo "=== Primera ejecución detectada ==="
     
+    # Crear estructura de directorios necesaria
+    echo "Creando estructura de directorios..."
+    mkdir -p /var/www/storage/app/public
+    mkdir -p /var/www/storage/framework/cache
+    mkdir -p /var/www/storage/framework/sessions
+    mkdir -p /var/www/storage/framework/views
+    mkdir -p /var/www/storage/logs
+    
     # Generar APP_KEY si no existe
     if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
         echo "Generando APP_KEY..."
