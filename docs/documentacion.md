@@ -1835,12 +1835,6 @@ npm run production
 
 Este proyecto fue desarrollado con fines académicos como proyecto de tesis.
 
-### 9.4 Contacto
-
-**Email:** [email del estudiante]
-
-**Repositorio:** https://github.com/rootpy-90/andyland-sisventas
-
 ---
 
 **Fin del Documento**
