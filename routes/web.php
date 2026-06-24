@@ -7,7 +7,7 @@ Route::get('/', function () {
 
 // Autenticación estándar de Laravel
 Auth::routes();
-Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
+Route::post('/logout', 'Auth\LoginController@logout')->name('logout');
 
 // Recuperación de contraseña sin email
 Route::get('/recuperar-password',         'RecuperarPasswordController@showForm')->name('recuperar.form');

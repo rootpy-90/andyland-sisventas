@@ -270,7 +270,10 @@
         @endif
         <a href="{{ route('mis.compras') }}" class="nav-link-pill"><i class="fa fa-shopping-bag"></i> Mis Compras</a>
         <a href="{{ route('perfil') }}" class="nav-link-pill"><i class="fa fa-user-circle"></i> Mi Perfil</a>
-        <a href="{{ route('logout') }}" class="nav-link-pill"><i class="fa fa-sign-out"></i> Salir</a>
+        <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+          {{ csrf_field() }}
+          <button type="submit" class="nav-link-pill" style="background:none;border:none;cursor:pointer;color:inherit;font:inherit;"><i class="fa fa-sign-out"></i> Salir</button>
+        </form>
       @else
         <a href="{{ route('login') }}" class="nav-link-pill"><i class="fa fa-sign-in"></i> Iniciar Sesión</a>
       @endauth

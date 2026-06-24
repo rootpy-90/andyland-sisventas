@@ -201,9 +201,12 @@
                       </a>
                     </div>
                     <div class="pull-right">
-                      <a href="{{ route('logout') }}" class="btn btn-default btn-flat">
-                        <i class="fa fa-sign-out"></i> Cerrar Sesión
-                      </a>
+                      <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn btn-default btn-flat" style="border:none;background:none;">
+                          <i class="fa fa-sign-out"></i> Cerrar Sesión
+                        </button>
+                      </form>
                     </div>
                   </li>
                 </ul>
