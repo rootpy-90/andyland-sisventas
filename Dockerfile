@@ -17,9 +17,10 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 # ============================================
 FROM php:7.4-apache AS production
 
-# Instalar dependencias del sistema + curl para healthcheck
+# Instalar dependencias del sistema + curl para healthcheck + mysql client
 RUN apt-get update && apt-get install -y \
     curl \
+    default-mysql-client \
     libpng-dev \
     libonig-dev \
     libxml2-dev \

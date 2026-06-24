@@ -16,6 +16,18 @@ done
 
 echo "✓ MySQL conectado"
 
+# Verificar si las tablas existen, si no, ejecutar init.sql
+echo "Verificando estructura de base de datos..."
+TABLES_EXIST=$(mysql -h db -u andyland_user -pA7SDY371Q -D dbventaslaravel -sNe "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'dbventaslaravel' AND table_name IN ('roles', 'persona', 'users', 'articulo', 'categoria', 'venta');")
+
+if [ "$TABLES_EXIST" -lt 6 ]; then
+    echo "Tablas faltantes detectadas. Ejecutando init.sql..."
+    mysql -h db -u andyland_user -pA7SDY371Q dbventaslaravel < /var/www/docker/mysql/init.sql
+    echo "✓ Base de datos inicializada correctamente"
+else
+    echo "✓ Estructura de base de datos verificada"
+fi
+
 # Verificar si es la primera ejecución
 if [ ! -f /var/www/storage/app/.installed ]; then
     echo ""
