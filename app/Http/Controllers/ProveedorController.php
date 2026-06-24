@@ -23,6 +23,7 @@ class ProveedorController extends Controller
    		$query=trim($request->get('searchText'));
    			$personas=DB::table('persona')
    			->where('tipo_persona','=','Proveedor')
+   			->whereNull('deleted_at')
    			->where(function($q) use ($query) {
    				$q->where('nombre','LIKE','%'.$query.'%')
    				  ->orWhere('num_documento','LIKE','%'.$query.'%');

@@ -394,8 +394,8 @@
         Eliminar mi cuenta
       </p>
       <p style="font-size:13px; color:#888; margin:0;">
-        Esta acción es permanente y no se puede deshacer.
-        Se eliminarán todos tus datos personales.
+        Tu cuenta será desactivada. Podés recuperarla contactándonos dentro de los 30 días.
+        Después de ese periodo, tus datos serán eliminados permanentemente.
       </p>
     </div>
     <button type="button" onclick="document.getElementById('modal-eliminar').classList.add('open')"
@@ -428,8 +428,8 @@
 
     <div style="padding:22px 20px;">
       <p style="font-size:13px; color:#555; margin:0 0 18px; line-height:1.7;">
-        Esta acción <strong>no se puede deshacer</strong>. Se eliminarán
-        permanentemente tu cuenta y todos tus datos personales.
+        Tu cuenta será <strong>desactivada</strong>. Podés recuperarla contactándonos dentro de los 30 días.
+        Después de ese periodo, tus datos serán eliminados permanentemente.
         Ingresá tu contraseña para confirmar.
       </p>
 

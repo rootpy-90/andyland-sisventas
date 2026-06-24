@@ -18,9 +18,12 @@ class PerfilController extends Controller
     public function index()
     {
         $user    = auth()->user();
-        $persona = $user->persona;
+        $persona = DB::table('persona')
+            ->where('idpersona', $user->idpersona)
+            ->whereNull('deleted_at')
+            ->first();
 
-        // Si el usuario no tiene persona vinculada, crearla con datos básicos
+        // Si el usuario no tiene persona vinculada o está eliminada, crearla con datos básicos
         if (!$persona) {
             $idpersona = DB::table('persona')->insertGetId([
                 'tipo_persona'    => 'Natural',
@@ -30,6 +33,7 @@ class PerfilController extends Controller
                 'direccion'       => '',
                 'telefono'        => '',
                 'email'           => $user->email,
+                'deleted_at'      => null,
             ]);
 
             DB::table('users')->where('id', $user->id)
@@ -52,6 +56,16 @@ class PerfilController extends Controller
     {
         $idpersona = auth()->user()->idpersona;
         $estado    = $request->get('estado');
+
+        // Verificar que el usuario no esté eliminado
+        $personaValida = DB::table('persona')
+            ->where('idpersona', $idpersona)
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if (!$personaValida) {
+            abort(403, 'Cuenta desactivada');
+        }
 
         $query = DB::table('venta')
             ->where('idcliente', $idpersona)
@@ -270,12 +284,13 @@ class PerfilController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Eliminar registros
-        DB::table('persona')->where('idpersona', $idpersona)->delete();
-        DB::table('users')->where('id', $iduser)->delete();
+        // Soft delete: marcar como eliminado (no borra datos físicos)
+        $now = now();
+        DB::table('persona')->where('idpersona', $idpersona)->update(['deleted_at' => $now]);
+        DB::table('users')->where('id', $iduser)->update(['deleted_at' => $now]);
 
         return redirect('/tienda')
-            ->with('status', 'Tu cuenta fue eliminada correctamente.');
+            ->with('status', 'Tu cuenta fue desactivada. Podés recuperarla contactándonos dentro de los 30 días.');
     }
 
     private function calcularCategoria($idpersona)
