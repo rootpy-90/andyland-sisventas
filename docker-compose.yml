@@ -18,7 +18,7 @@ services:
       - dokploy-network
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
     environment:
       APP_NAME: "Andyland PY - SisVentas"
       APP_ENV: production
@@ -77,12 +77,6 @@ services:
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - dokploy-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 90s
     command: --default-authentication-plugin=mysql_native_password
     deploy:
       resources:
