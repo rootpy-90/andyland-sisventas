@@ -79,16 +79,16 @@ class IngresoController extends Controller
   				$detalle->precio_venta=$precio_venta[$cont];
   				$detalle->save();
   				$cont=$cont+1;
-			  }
+  		  }
 
-			  DB::commit();
-  		
-  		}catch(Exception $e)
-  		{
-  			DB::rollack();
-  		}
+		  DB::commit();
+		
+		}catch(Exception $e)
+   		{
+   			DB::rollBack();
+   		}
 
-  		return Redirect::to('compras/ingreso');
+   		return Redirect::to('compras/ingreso');
   	} 
   	public function show($id)
   	{
@@ -114,10 +114,10 @@ class IngresoController extends Controller
   	}
 
   	public function destroy($id)
-  	{
-  		$ingreso=Ingreso::findOrFail($id);
-  		$ingreso->Estado='C';
-  		$ingreso->update();
-  		return Redirect::to('compras/ingreso');
-  	}
+   	{
+   		$ingreso=Ingreso::findOrFail($id);
+   		$ingreso->estado='C';
+   		$ingreso->update();
+   		return Redirect::to('compras/ingreso');
+   	}
 }
