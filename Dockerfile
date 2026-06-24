@@ -5,8 +5,9 @@ FROM composer:2.2 AS dependencies
 
 WORKDIR /app
 
-# Copiar solo archivos de composer para aprovechar layer caching
+# Copiar archivos de composer y carpetas requeridas para autoload
 COPY composer.json composer.lock ./
+COPY database/ ./database/
 
 # Instalar dependencias de producción
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
