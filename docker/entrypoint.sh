@@ -73,7 +73,6 @@ fi
 # Optimizar para producción (cada vez que inicia)
 echo "Optimizando para producción..."
 php artisan config:cache
-php artisan view:cache
 
 # Asegurar permisos correctos
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
