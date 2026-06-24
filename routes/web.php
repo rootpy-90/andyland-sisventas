@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/tienda/perfil',                  'PerfilController@update')->name('perfil.update');
     Route::post('/tienda/perfil/password',          'PerfilController@cambiarPassword')->name('perfil.password');
     Route::post('/tienda/perfil/email',             'PerfilController@actualizarEmail')->name('perfil.email');
+    Route::get('/tienda/perfil/exportar',           'PerfilController@exportarDatos')->name('perfil.exportar');
     Route::delete('/tienda/perfil',                 'PerfilController@eliminarCuenta')->name('perfil.eliminar');
     Route::get('/tienda/mis-compras',                   'PerfilController@misCompras')->name('mis.compras');
     Route::post('/tienda/compra/{id}/cancelar',         'PerfilController@cancelarCompra')->name('compra.cancelar');

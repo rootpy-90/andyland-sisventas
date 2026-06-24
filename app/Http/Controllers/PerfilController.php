@@ -213,6 +213,100 @@ class PerfilController extends Controller
         return redirect()->route('perfil')->with('status', '¡Correo electrónico actualizado correctamente!');
     }
 
+    public function exportarDatos()
+    {
+        $user = auth()->user();
+        $persona = DB::table('persona')
+            ->where('idpersona', $user->idpersona)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$persona) {
+            return redirect()->route('perfil')->with('error', 'No se encontraron datos para exportar.');
+        }
+
+        // Obtener historial de pedidos
+        $pedidos = DB::table('venta as v')
+            ->select('v.idventa', 'v.fecha_hora', 'v.num_comprobante', 'v.total_venta', 'v.estado', 'v.metodo_pago')
+            ->where('v.idcliente', $persona->idpersona)
+            ->orderBy('v.fecha_hora', 'desc')
+            ->get();
+
+        // Obtener detalles de cada pedido
+        foreach ($pedidos as $pedido) {
+            $pedido->detalles = DB::table('detalle_venta as dv')
+                ->join('articulo as a', 'dv.idarticulo', '=', 'a.idarticulo')
+                ->select('a.nombre as articulo', 'dv.cantidad', 'dv.precio_venta', 'dv.descuento')
+                ->where('dv.idventa', $pedido->idventa)
+                ->get();
+        }
+
+        // Calcular estadísticas
+        $totalPedidos = $pedidos->count();
+        $totalGastado = $pedidos->where('estado', 'A')->sum('total_venta');
+        $categoria = $this->calcularCategoria($persona->idpersona);
+
+        // Construir estructura de datos
+        $datos = [
+            'exportado_el' => now()->toIso8601String(),
+            'usuario' => [
+                'id' => $user->id,
+                'nombre' => $user->name,
+                'email' => $user->email,
+                'fecha_registro' => $user->created_at,
+                'rol' => $user->idrol == 1 ? 'Administrador' : 'Cliente',
+            ],
+            'datos_personales' => [
+                'nombre' => $persona->nombre,
+                'apellido' => $persona->apellido ?? '',
+                'tipo_documento' => $persona->tipo_documento,
+                'num_documento' => $persona->num_documento,
+                'telefono' => $persona->telefono,
+                'email' => $persona->email,
+                'direccion' => $persona->direccion,
+                'ciudad' => $persona->ciudad,
+                'barrio' => $persona->barrio,
+                'pais' => $persona->pais,
+                'referencia' => $persona->referencia,
+            ],
+            'categoria_cliente' => [
+                'label' => $categoria['label'],
+                'color' => $categoria['color'],
+            ],
+            'estadisticas' => [
+                'total_pedidos' => $totalPedidos,
+                'total_gastado' => (float) $totalGastado,
+                'promedio_por_pedido' => $totalPedidos > 0 ? (float) ($totalGastado / $totalPedidos) : 0,
+            ],
+            'historial_pedidos' => $pedidos->map(function($p) {
+                return [
+                    'numero_comprobante' => $p->num_comprobante,
+                    'fecha' => $p->fecha_hora,
+                    'estado' => $p->estado == 'P' ? 'Pendiente' : ($p->estado == 'A' ? 'Aceptado' : 'Cancelado'),
+                    'metodo_pago' => $p->metodo_pago ?? 'Efectivo',
+                    'total' => (float) $p->total_venta,
+                    'articulos' => $p->detalles->map(function($d) {
+                        return [
+                            'nombre' => $d->articulo,
+                            'cantidad' => (int) $d->cantidad,
+                            'precio_unitario' => (float) $d->precio_venta,
+                            'descuento' => (float) $d->descuento,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray(),
+        ];
+
+        // Generar nombre de archivo
+        $fecha = date('Y-m-d');
+        $nombreArchivo = "mis_datos_{$fecha}.json";
+
+        // Retornar como descarga
+        return response()->json($datos, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ->header('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"')
+            ->header('Content-Type', 'application/json');
+    }
+
     public function subirComprobante(Request $request, $id)
     {
         $venta = DB::table('venta')

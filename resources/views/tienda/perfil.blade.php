@@ -387,11 +387,34 @@
     <i class="fa fa-exclamation-triangle" style="color:#e74c3c; font-size:16px;"></i>
     <span style="font-size:14px; font-weight:800; color:#991b1b;">Zona de peligro</span>
   </div>
+
+  {{-- Exportar datos --}}
+  <div style="padding:20px 24px; display:flex; align-items:center;
+              justify-content:space-between; gap:16px; flex-wrap:wrap;
+              border-bottom:1px solid #fff1f2;">
+    <div>
+      <p style="font-size:14px; font-weight:700; color:#2c3e50; margin:0 0 4px;">
+        Exportar mis datos
+      </p>
+      <p style="font-size:13px; color:#888; margin:0;">
+        Descargá toda tu información personal e historial de pedidos en formato JSON.
+      </p>
+    </div>
+    <a href="{{ route('perfil.exportar') }}"
+      style="background:#3498db; color:#fff; border:none; border-radius:9px;
+             padding:10px 22px; font-size:13px; font-weight:800; cursor:pointer;
+             white-space:nowrap; flex-shrink:0; text-decoration:none;
+             display:inline-flex; align-items:center; gap:7px;">
+      <i class="fa fa-download"></i> Exportar datos
+    </a>
+  </div>
+
+  {{-- Eliminar cuenta --}}
   <div style="padding:20px 24px; display:flex; align-items:center;
               justify-content:space-between; gap:16px; flex-wrap:wrap;">
     <div>
       <p style="font-size:14px; font-weight:700; color:#2c3e50; margin:0 0 4px;">
-        Eliminar mi cuenta
+        Desactivar mi cuenta
       </p>
       <p style="font-size:13px; color:#888; margin:0;">
         Tu cuenta será desactivada. Podés recuperarla contactándonos dentro de los 30 días.
@@ -402,7 +425,7 @@
       style="background:#e74c3c; color:#fff; border:none; border-radius:9px;
              padding:10px 22px; font-size:13px; font-weight:800; cursor:pointer;
              white-space:nowrap; flex-shrink:0;">
-      <i class="fa fa-trash"></i> Eliminar cuenta
+      <i class="fa fa-trash"></i> Desactivar cuenta
     </button>
   </div>
 </div>
@@ -417,7 +440,7 @@
     <div style="background:#e74c3c; color:#fff; padding:16px 20px;
                 display:flex; align-items:center; justify-content:space-between;">
       <span style="font-size:15px; font-weight:800;">
-        <i class="fa fa-exclamation-triangle"></i> ¿Eliminar tu cuenta?
+        <i class="fa fa-exclamation-triangle"></i> ¿Desactivar tu cuenta?
       </span>
       <button type="button"
         onclick="document.getElementById('modal-eliminar').classList.remove('open')"
@@ -474,7 +497,7 @@
           <button type="submit"
             style="background:#e74c3c; color:#fff; border:none; border-radius:8px;
                    padding:9px 22px; font-size:13px; font-weight:800; cursor:pointer;">
-            <i class="fa fa-trash"></i> Sí, eliminar cuenta
+            <i class="fa fa-trash"></i> Sí, desactivar cuenta
           </button>
         </div>
 
