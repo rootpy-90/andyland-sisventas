@@ -9,7 +9,7 @@ echo "=== Iniciando Andyland SisVentas ==="
 
 # Esperar a que MySQL esté listo
 echo "Esperando conexión a MySQL..."
-until php -r "try { new PDO('mysql:host=db;dbname=dbventaslaravel', 'sisventas', getenv('DB_PASSWORD')); echo 'OK'; } catch(Exception \$e) { exit(1); }" 2>/dev/null; do
+until php -r "try { new PDO('mysql:host=db;dbname=dbventaslaravel', 'andyland_user', 'A7SDY371Q'); echo 'OK'; } catch(Exception \$e) { exit(1); }" 2>/dev/null; do
     echo "MySQL no está listo aún, esperando 2 segundos..."
     sleep 2
 done
