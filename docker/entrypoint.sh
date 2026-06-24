@@ -73,7 +73,6 @@ fi
 # Optimizar para producción (cada vez que inicia)
 echo "Optimizando para producción..."
 php artisan config:cache
-php artisan route:cache
 php artisan view:cache
 
 # Asegurar permisos correctos
