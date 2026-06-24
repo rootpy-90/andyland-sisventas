@@ -1,17 +1,27 @@
 # ============================================
-# Stage 1: Development image (PHP 7.4 + Apache)
+# Stage 1: Dependencies (Composer)
 # ============================================
-FROM php:7.4-apache AS development
+FROM composer:2.2 AS dependencies
 
-# Install system dependencies
+WORKDIR /app
+
+# Copiar solo archivos de composer para aprovechar layer caching
+COPY composer.json composer.lock ./
+
+# Instalar dependencias de producción
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+
+# ============================================
+# Stage 2: Production Runtime
+# ============================================
+FROM php:7.4-apache AS production
+
+# Instalar dependencias del sistema + curl para healthcheck
 RUN apt-get update && apt-get install -y \
-    git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    unzip \
     libzip-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -19,26 +29,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
-
-# Enable Apache modules
+# Habilitar módulos de Apache
 RUN a2enmod rewrite headers
 
-# Set working directory
-WORKDIR /var/www
-
-# Copy application files
-COPY . .
-
-# Install PHP dependencies
-RUN composer install --no-interaction --prefer-dist --no-scripts
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Apache config for Laravel
+# Configurar Apache para Laravel
 RUN echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/public\n\
     <Directory /var/www/public>\n\
@@ -47,56 +41,40 @@ RUN echo '<VirtualHost *:80>\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-EXPOSE 8000
-
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
-
-# ============================================
-# Stage 2: Production image (optional)
-# ============================================
-FROM php:7.4-apache AS production
-
-# Install system dependencies (same as development)
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Configurar PHP para producción
+RUN echo "memory_limit = 256M\n\
+upload_max_filesize = 10M\n\
+post_max_size = 10M\n\
+max_execution_time = 60" > /usr/local/etc/php/conf.d/custom.ini
 
 WORKDIR /var/www
 
-# Copy application files
-COPY . .
+# Copiar dependencias de Composer desde stage anterior
+COPY --from=dependencies --chown=www-data:www-data /app/vendor ./vendor
 
-# Install Composer
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
+# Copiar código de la aplicación
+COPY --chown=www-data:www-data . .
 
-# Install only production dependencies
-RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+# Copiar .env.example para que artisan funcione
+COPY --chown=www-data:www-data .env.example .env
 
-# Optimize for production
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Copiar entrypoint script
+COPY --chown=www-data:www-data docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+# Crear directorios necesarios
+RUN mkdir -p /var/www/storage/app/public \
+    /var/www/public/comprobantes \
+    /var/www/public/imagenes/articulos \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Apache config
-RUN echo '<VirtualHost *:80>\n\
-    DocumentRoot /var/www/public\n\
-    <Directory /var/www/public>\n\
-        AllowOverride All\n\
-        Require all granted\n\
-    </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
-
+# Exponer puerto
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:80 || exit 1
+
+# Usar entrypoint script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

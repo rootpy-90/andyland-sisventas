@@ -1,95 +1,103 @@
 services:
   # ============================================
-  # APP - Laravel 5.4 con PHP 7.4
+  # APP - Laravel 5.4 con PHP 7.4 (Producción)
   # ============================================
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
-    container_name: sisventas-app
+      target: production
+    container_name: andyland-sisventas-app
     restart: unless-stopped
     working_dir: /var/www
+    env_file:
+      - .env
     volumes:
-      - ./:/var/www
       - ./storage:/var/www/storage
+      - ./public/comprobantes:/var/www/public/comprobantes
+      - ./public/imagenes:/var/www/public/imagenes
     networks:
-      - sisventas-network
+      - dokploy-network
     depends_on:
       db:
         condition: service_healthy
     environment:
+      - APP_NAME=Andyland SisVentas
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=https://andyland-sisventas.ndeapp.com
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
       - DB_DATABASE=dbventaslaravel
-      - DB_USERNAME=sisventas
-      - DB_PASSWORD=secret
-    command: >
-      sh -c "composer install --no-interaction --prefer-dist &&
-             php artisan key:generate --force &&
-             php artisan migrate --force &&
-             php artisan serve --host=0.0.0.0 --port=8000"
-    ports:
-      - "8000:8000"
+      - CACHE_DRIVER=file
+      - SESSION_DRIVER=file
+      - QUEUE_DRIVER=sync
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - "dokploy.rebuild=true"
+      - "com.andyland.commit=$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
+      - traefik.http.routers.andyland-sisventas.rule=Host(`andyland-sisventas.ndeapp.com`)
+      - traefik.http.routers.andyland-sisventas.entrypoints=websecure
+      - traefik.http.routers.andyland-sisventas.tls.certresolver=letsencryptresolver
+      - traefik.http.routers.andyland-sisventas.service=andyland-sisventas
+      - traefik.http.services.andyland-sisventas.loadbalancer.server.port=80
+      - traefik.http.services.andyland-sisventas.loadbalancer.passHostHeader=true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
   # ============================================
-  # DATABASE - MySQL 5.7 (compatible con Laravel 5.4)
+  # DATABASE - MySQL 5.7 (Producción)
   # ============================================
   db:
     image: mysql:5.7
-    container_name: sisventas-db
+    container_name: andyland-sisventas-db
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_DATABASE: dbventaslaravel
       MYSQL_USER: sisventas
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: rootsecret
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
-      - sisventas-db-data:/var/lib/mysql
+      - andyland-db-data:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - sisventas-network
-    ports:
-      - "3307:3306"
+      - dokploy-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-
-  # ============================================
-  # PHPMYADMIN - Admin BD (opcional)
-  # ============================================
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    container_name: sisventas-phpmyadmin
-    restart: unless-stopped
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: rootsecret
-    networks:
-      - sisventas-network
-    depends_on:
-      - db
-    ports:
-      - "8081:80"
-    profiles:
-      - tools
+    command: --default-authentication-plugin=mysql_native_password
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
 networks:
-  sisventas-network:
-    driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
-  sisventas-db-data:
+  andyland-db-data:
     driver: local

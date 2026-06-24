@@ -1,17 +1,60 @@
+# ============================================
+# Archivos de desarrollo y configuración local
+# ============================================
 .git
+.gitignore
+.github
 .idea
 .vscode
+*.md
+!README.md
+docs/
+docker-compose.dev.yml
+COMANDOS.md
+
+# ============================================
+# Dependencias (se instalan en el build)
+# ============================================
 node_modules
+vendor
+
+# ============================================
+# Logs y archivos temporales
+# ============================================
+*.log
 npm-debug.log
 yarn-error.log
-.env
 .phpunit.result.cache
+storage/logs/*.log
+storage/*.key
+
+# ============================================
+# Variables de entorno (se generan en runtime)
+# ============================================
+.env
+.env.backup
 Homestead.json
 Homestead.yaml
 vagrant-*.key
-*.log
-storage/*.key
-vendor
+
+# ============================================
+# Sistema operativo
+# ============================================
 .DS_Store
 Thumbs.db
+
+# ============================================
+# Tests (no se necesitan en producción)
+# ============================================
+tests/
+phpunit.xml
+
+# ============================================
+# Docker data local
+# ============================================
 docker/mysql/data
+
+# ============================================
+# Assets sin compilar (se compilan en el build)
+# ============================================
+resources/assets
