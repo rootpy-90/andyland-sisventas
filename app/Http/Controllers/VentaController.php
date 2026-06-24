@@ -107,16 +107,16 @@ class VentaController extends Controller
   				$detalle->precio_venta=$precio_venta[$cont];
   				$detalle->save();
   				$cont=$cont+1;
-			  }
+  		  }
 
-			  DB::commit();
-  		
-  		}catch(Exception $e)
-  		{
-  			DB::rollack();
-  		}
+		  DB::commit();
+		
+		}catch(Exception $e)
+   		{
+   			DB::rollBack();
+   		}
 
-  		return Redirect::to('ventas/venta');
+   		return Redirect::to('ventas/venta');
   	} 
   	public function show($id)
   	{
