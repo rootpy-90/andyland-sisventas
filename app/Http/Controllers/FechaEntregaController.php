@@ -19,12 +19,16 @@ class FechaEntregaController extends Controller
             ->orderBy('fecha', 'asc')
             ->get();
 
-        // Contar pedidos asignados a cada fecha
+        // Contar pedidos asignados a cada fecha (optimizado: UNA sola query con GROUP BY)
+        $conteos = DB::table('venta')
+            ->select('fecha_entrega', DB::raw('COUNT(*) as total_pedidos'))
+            ->whereIn('estado', ['P', 'A'])
+            ->whereIn('fecha_entrega', $fechas->pluck('fecha'))
+            ->groupBy('fecha_entrega')
+            ->pluck('total_pedidos', 'fecha_entrega');
+
         foreach ($fechas as $f) {
-            $f->total_pedidos = DB::table('venta')
-                ->where('fecha_entrega', $f->fecha)
-                ->whereIn('estado', ['P', 'A'])
-                ->count();
+            $f->total_pedidos = $conteos->get($f->fecha, 0);
         }
 
         $totalActivas = $fechas->where('activo', 1)->where('fecha', '>=', date('Y-m-d'))->count();
@@ -119,16 +123,21 @@ class FechaEntregaController extends Controller
             ->orderBy('fecha', 'asc')
             ->get();
 
+        // Cargar pedidos de todas las fechas en UNA sola query (evita N+1)
+        $fechaList = $fechas->pluck('fecha')->toArray();
+        $pedidos = DB::table('venta as v')
+            ->join('persona as p', 'v.idcliente', '=', 'p.idpersona')
+            ->select('v.fecha_entrega', 'v.idventa', 'v.num_comprobante', 'v.total_venta',
+                     'v.hora_entrega', 'v.tipo_distribucion', 'v.estado',
+                     'p.nombre as cliente', 'p.telefono')
+            ->whereIn('v.fecha_entrega', $fechaList)
+            ->whereIn('v.estado', ['P', 'A'])
+            ->orderBy('v.hora_entrega', 'asc')
+            ->get()
+            ->groupBy('fecha_entrega');
+
         foreach ($fechas as $f) {
-            $f->pedidos = DB::table('venta as v')
-                ->join('persona as p', 'v.idcliente', '=', 'p.idpersona')
-                ->select('v.idventa', 'v.num_comprobante', 'v.total_venta',
-                         'v.hora_entrega', 'v.tipo_distribucion', 'v.estado',
-                         'p.nombre as cliente', 'p.telefono')
-                ->where('v.fecha_entrega', $f->fecha)
-                ->whereIn('v.estado', ['P', 'A'])
-                ->orderBy('v.hora_entrega', 'asc')
-                ->get();
+            $f->pedidos = $pedidos->get($f->fecha, collect());
         }
 
         $totalConFecha  = DB::table('venta')->whereNotNull('fecha_entrega')->whereIn('estado',['P','A'])->count();

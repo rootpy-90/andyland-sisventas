@@ -227,13 +227,17 @@ class VentaController extends Controller
                             : 0,
         ];
 
-        // Detalle de cada venta
+        // Detalle de cada venta (optimizado: UNA sola query en vez de N+1)
+        $ventaIds = $ventas->pluck('idventa')->toArray();
+        $detalles = DB::table('detalle_venta as dv')
+            ->join('articulo as a', 'dv.idarticulo', '=', 'a.idarticulo')
+            ->select('dv.idventa', 'a.codigo', 'a.nombre as articulo', 'dv.cantidad', 'dv.precio_venta', 'dv.descuento')
+            ->whereIn('dv.idventa', $ventaIds)
+            ->get()
+            ->groupBy('idventa');
+
         foreach ($ventas as $v) {
-            $v->detalles = DB::table('detalle_venta as dv')
-                ->join('articulo as a', 'dv.idarticulo', '=', 'a.idarticulo')
-                ->select('a.codigo', 'a.nombre as articulo', 'dv.cantidad', 'dv.precio_venta', 'dv.descuento')
-                ->where('dv.idventa', $v->idventa)
-                ->get();
+            $v->detalles = $detalles->get($v->idventa, collect());
         }
 
         // Desglose por método de pago

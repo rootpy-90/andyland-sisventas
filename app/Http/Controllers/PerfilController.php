@@ -77,13 +77,18 @@ class PerfilController extends Controller
 
         $pedidos = $query->paginate(8);
 
-        // Cargar detalles de cada pedido
+        // Cargar detalles de todos los pedidos en UNA sola query (evita N+1)
+        $pedidoIds = $pedidos->pluck('idventa')->toArray();
+        $detalles = DB::table('detalle_venta as dv')
+            ->join('articulo as a', 'dv.idarticulo', '=', 'a.idarticulo')
+            ->select('dv.idventa', 'a.nombre as articulo', 'a.imagen', 'dv.cantidad', 'dv.precio_venta')
+            ->whereIn('dv.idventa', $pedidoIds)
+            ->get()
+            ->groupBy('idventa');
+
+        // Asignar detalles a cada pedido
         foreach ($pedidos as $pedido) {
-            $pedido->detalles = DB::table('detalle_venta as dv')
-                ->join('articulo as a', 'dv.idarticulo', '=', 'a.idarticulo')
-                ->select('a.nombre as articulo', 'a.imagen', 'dv.cantidad', 'dv.precio_venta')
-                ->where('dv.idventa', $pedido->idventa)
-                ->get();
+            $pedido->detalles = $detalles->get($pedido->idventa, collect());
         }
 
         // Conteos por estado
