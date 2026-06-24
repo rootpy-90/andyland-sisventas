@@ -20,14 +20,15 @@ class ClienteController extends Controller
   	{
   		if ($request)
   		{
-  			$query=trim($request->get('searchText'));
-  			$personas=DB::table('persona')
-  			->where('nombre','LIKE','%'.$query.'%')
-  			->where('tipo_persona','=','Cliente')
-  			->orwhere('num_documento','LIKE','%'.$query.'%')
-  			->where('tipo_persona','=','Cliente')
-  			->orderBy('idpersona','desc')
-  			->paginate(7);
+   		$query=trim($request->get('searchText'));
+   			$personas=DB::table('persona')
+   			->where('tipo_persona','=','Cliente')
+   			->where(function($q) use ($query) {
+   				$q->where('nombre','LIKE','%'.$query.'%')
+   				  ->orWhere('num_documento','LIKE','%'.$query.'%');
+   			})
+   			->orderBy('idpersona','desc')
+   			->paginate(7);
   			return view('ventas.cliente.index',["personas"=>$personas,"searchText"=>$query]);
   		}
   	}
