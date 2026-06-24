@@ -45,15 +45,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $adminUser = User::updateOrCreate(
-            ['email' => 'admin@andyland.com'],
-            [
+        $adminUser = User::where('email', 'admin@andyland.com')->first();
+
+        if ($adminUser) {
+            $adminUser->name = 'admin';
+            $adminUser->idrol = 1;
+            $adminUser->idpersona = $adminPersona->idpersona;
+            $adminUser->save();
+            $adminWasCreated = false;
+        } else {
+            $adminUser = User::create([
                 'name' => 'admin',
+                'email' => 'admin@andyland.com',
                 'password' => Hash::make('admin123'),
                 'idrol' => 1,
                 'idpersona' => $adminPersona->idpersona,
-            ]
-        );
+            ]);
+            $adminWasCreated = true;
+        }
 
         // ============================================
         // Crear usuario cliente (idempotente)
@@ -73,15 +82,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $clienteUser = User::updateOrCreate(
-            ['email' => 'cliente@andyland.com'],
-            [
+        $clienteUser = User::where('email', 'cliente@andyland.com')->first();
+
+        if ($clienteUser) {
+            $clienteUser->name = 'cliente';
+            $clienteUser->idrol = 2;
+            $clienteUser->idpersona = $clientePersona->idpersona;
+            $clienteUser->save();
+            $clienteWasCreated = false;
+        } else {
+            $clienteUser = User::create([
                 'name' => 'cliente',
+                'email' => 'cliente@andyland.com',
                 'password' => Hash::make('cliente123'),
                 'idrol' => 2,
                 'idpersona' => $clientePersona->idpersona,
-            ]
-        );
+            ]);
+            $clienteWasCreated = true;
+        }
 
         // ============================================
         // Crear proveedor (idempotente)
@@ -175,9 +193,17 @@ class DatabaseSeeder extends Seeder
         $this->command->info('✓ Seeders ejecutados correctamente');
         $this->command->info('========================================');
         $this->command->info('');
-        $this->command->info('Usuarios creados:');
-        $this->command->info('  Admin:   admin@andyland.com / admin123');
-        $this->command->info('  Cliente: cliente@andyland.com / cliente123');
+        $this->command->info('Usuarios iniciales:');
+        if ($adminWasCreated) {
+            $this->command->info('  Admin:   admin@andyland.com / admin123 (creado)');
+        } else {
+            $this->command->info('  Admin:   admin@andyland.com (ya existía, contraseña preservada)');
+        }
+        if ($clienteWasCreated) {
+            $this->command->info('  Cliente: cliente@andyland.com / cliente123 (creado)');
+        } else {
+            $this->command->info('  Cliente: cliente@andyland.com (ya existía, contraseña preservada)');
+        }
         $this->command->info('');
         $this->command->info('Datos creados:');
         $this->command->info('  Roles: 2');

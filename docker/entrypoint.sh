@@ -16,6 +16,20 @@ done
 
 echo "✓ MySQL conectado"
 
+seed_initial_data() {
+    echo "Ejecutando seeders seguros (datos iniciales y admin requerido)..."
+    php artisan db:seed --force
+
+    ADMIN_EXISTS_AFTER=$(mysql -h db -u andyland_user -pA7SDY371Q -D dbventaslaravel -sNe "SELECT COUNT(*) FROM users WHERE email = 'admin@andyland.com';" 2>/dev/null || echo "0")
+
+    if [ "$ADMIN_EXISTS_AFTER" -gt 0 ]; then
+        echo "✓ Default admin verified after seeding: admin@andyland.com"
+    else
+        echo "✗ Default admin missing after seeding"
+        exit 1
+    fi
+}
+
 # Verificar si las tablas existen, si no, ejecutar init.sql
 echo "Verificando estructura de base de datos..."
 TABLES_EXIST=$(mysql -h db -u andyland_user -pA7SDY371Q -D dbventaslaravel -sNe "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'dbventaslaravel' AND table_name IN ('roles', 'persona', 'users', 'articulo', 'categoria', 'venta');")
@@ -50,9 +64,8 @@ if [ ! -f /var/www/storage/app/.installed ]; then
         rm /tmp/app_key
     fi
     
-    # Ejecutar seeders (crear admin y datos iniciales)
-    echo "Ejecutando seeders (creando admin y datos de prueba)..."
-    php artisan db:seed --force
+    # Ejecutar seeders seguros (crear admin y datos iniciales sin sobrescribir contraseña existente)
+    seed_initial_data
     
     # Crear link de storage
     php artisan storage:link || true
@@ -62,12 +75,12 @@ if [ ! -f /var/www/storage/app/.installed ]; then
     
     echo ""
     echo "✓ Aplicación configurada correctamente"
-    echo "✓ Admin creado: admin@andyland.com / admin123"
     echo ""
 else
     echo ""
     echo "=== Aplicación ya instalada ==="
     echo "Verificando datos iniciales..."
+    seed_initial_data
 fi
 
 # Optimizar para producción (cada vez que inicia)

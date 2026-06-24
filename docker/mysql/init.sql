@@ -173,12 +173,3 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
   `created_at` TIMESTAMP NULL DEFAULT NULL,
   INDEX `idx_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Insertar admin inicial (password: admin123)
-INSERT INTO `persona` (`idpersona`, `tipo_persona`, `nombre`, `email`) VALUES
-(1, 'Administrador', 'Admin Sistema', 'admin@andyland.com')
-ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
-
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `idrol`, `idpersona`) VALUES
-(1, 'admin', 'admin@andyland.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uQEzA/I.0O', 1, 1)
-ON DUPLICATE KEY UPDATE name=VALUES(name);
