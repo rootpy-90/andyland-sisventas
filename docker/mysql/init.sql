@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `persona` (
   `idpersona` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `tipo_persona` VARCHAR(20) NOT NULL DEFAULT 'Cliente',
   `nombre` VARCHAR(100) NOT NULL,
+  `apellido` VARCHAR(100) NULL,
   `tipo_documento` VARCHAR(20) NULL,
   `num_documento` VARCHAR(20) NULL,
   `direccion` VARCHAR(255) NULL,
@@ -33,9 +34,27 @@ CREATE TABLE IF NOT EXISTS `persona` (
   `pais` VARCHAR(50) NULL,
   `referencia` TEXT NULL,
   `categoria` VARCHAR(50) NULL DEFAULT 'Nueva',
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`idpersona`),
   INDEX `idx_tipo_persona` (`tipo_persona`),
   INDEX `idx_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Crear tabla users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `remember_token` VARCHAR(100) NULL,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  `idrol` INT NOT NULL DEFAULT 2,
+  `idpersona` INT UNSIGNED NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_email_unique` (`email`),
+  FOREIGN KEY (`idpersona`) REFERENCES `persona`(`idpersona`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Crear tabla categoria
@@ -133,6 +152,26 @@ CREATE TABLE IF NOT EXISTS `caja` (
   `observaciones` TEXT NULL,
   PRIMARY KEY (`idcaja`),
   INDEX `idx_fecha` (`fecha_apertura`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Crear tabla fechas_entrega
+CREATE TABLE IF NOT EXISTS `fechas_entrega` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `fecha` DATE NOT NULL,
+  `descripcion` VARCHAR(255) NULL,
+  `activo` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_fecha` (`fecha`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Crear tabla password_resets
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `email` VARCHAR(255) NOT NULL,
+  `token` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  INDEX `idx_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insertar admin inicial (password: admin123)

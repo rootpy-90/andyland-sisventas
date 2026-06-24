@@ -30,10 +30,6 @@ if [ ! -f /var/www/storage/app/.installed ]; then
         rm /tmp/app_key
     fi
     
-    # Ejecutar migraciones
-    echo "Ejecutando migraciones..."
-    php artisan migrate --force
-    
     # Ejecutar seeders (crear admin y datos iniciales)
     echo "Ejecutando seeders (creando admin y datos de prueba)..."
     php artisan db:seed --force
@@ -51,8 +47,7 @@ if [ ! -f /var/www/storage/app/.installed ]; then
 else
     echo ""
     echo "=== Aplicación ya instalada ==="
-    echo "Ejecutando migraciones pendientes..."
-    php artisan migrate --force
+    echo "Verificando datos iniciales..."
 fi
 
 # Optimizar para producción (cada vez que inicia)
